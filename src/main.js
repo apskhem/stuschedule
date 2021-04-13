@@ -15,7 +15,14 @@ class GoogleAppsScriptDB {
     FormatRequestURL(params, action) {
         let url = this.link + "?";
 
-        for (const key in params) url += `${key}=${params[key]}&`;
+        for (const key in params) {
+            let value = params[key];
+
+            if (value instanceof Array) value = value.toString();
+            else if (value instanceof Object) value = JSON.stringify(value);
+
+            url += `${key}=${value}&`;
+        }
 
         url += "action=" + action;
         return url;
@@ -66,6 +73,8 @@ export const db = new GoogleAppsScriptDB("https://script.google.com/macros/s/AKf
 db.Response("SIGNIN", (data, meta) => {
     if (data.err) eventBus.$emit("signInError");
     else eventBus.$emit("navigateToContents", data.userSettings, data.userData, {username: meta.username});
+    
+    // localStorage.setItem("user", meta.username);
 })
 
 db.Response("SIGNUP", (data) => {
@@ -79,5 +88,13 @@ db.DefaultResponse(() => {
 Vue.config.productionTip = false;
 
 new Vue({
-    render: h => h(App)
+    render: h => h(App),
+    created() {
+        
+        if (localStorage.getItem("user")) {
+            console.log(localStorage.getItem("user"));
+
+            // make request
+        }
+    }
 }).$mount('#app');
